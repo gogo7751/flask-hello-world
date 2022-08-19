@@ -1,38 +1,21 @@
-from flask import Flask, jsonify
+from random import random
+from flask import Flask, jsonify, request
 import os
-from Crypto.Cipher import AES
-import base64
+from rediscluster import RedisCluster
+from uitls import Aes_ECB, Ses
+import logging
 
 
-class Aes_ECB(object):
-    def __init__(self, key):
-        self.key = key
-        self.MODE = AES.MODE_ECB
-        self.BS = AES.block_size
-        self.pad = lambda s: s + (self.BS - len(s) % self.BS) * chr(
-            self.BS - len(s) % self.BS
-        )
-        self.unpad = lambda s: s[0 : -ord(s[-1])]
+logging.getLogger().setLevel(logging.INFO)
 
-    def add_to_16(value):
-        while len(value) % 16 != 0:
-            value += "\0"
-        return str.encode(value)
-
-    def AES_encrypt(self, text):
-        aes = AES.new(Aes_ECB.add_to_16(self.key), self.MODE)
-        encrypted_text = str(
-            base64.encodebytes(aes.encrypt(Aes_ECB.add_to_16(self.pad(text)))),
-            encoding="utf-8",
-        ).replace("\n", "")
-        return encrypted_text
-
-    def AES_decrypt(self, text):
-        cipher = AES.new(Aes_ECB.add_to_16(self.key), self.MODE)
-        decrypt_data = base64.b64decode(text)
-        plain_text = cipher.decrypt(decrypt_data)
-        return plain_text.decode("utf8").rstrip()
-
+host = "clustercfg.redis-cluster.nhucv0.memorydb.ap-northeast-1.amazonaws.com"
+port = "6379"
+redis = RedisCluster(
+    startup_nodes=[{"host": host, "port": port}],
+    decode_responses=True,
+    skip_full_coverage_check=True,
+    ssl=True,
+)
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
@@ -54,6 +37,34 @@ def hello_world(_input):
         ),
         200,
     )
+
+
+@app.route("/otp", methods=["POST"])
+def otp():
+    random_num = [random.randint(0, 9) for p in range(0, 10)]
+    otp = "".join(map(str, random_num))
+    data = request.get_json()
+    email = data["email"]
+    body_text = f"登入驗證碼：{otp}，驗證碼 5 分鐘內有效。"
+    redis.set(f"otp-{email}", {"email": email, "otp": otp})
+    redis.expire(f"otp-{email}", 5)
+
+    Ses(email, body_text)
+    return jsonify({"msg": "OK"}), 200
+
+
+@app.route("/verify", methods=["POST"])
+def verify():
+    data = request.get_json()
+    otp = data["otp"]
+    email = data["email"]
+    otp_exist = redis.get(f"otp-{email}")
+    if otp_exist:
+        if otp_exist["email"] != email or otp_exist["otp"] != otp:
+            return jsonify({"msg": "驗證碼錯誤"}), 401
+        return jsonify({"msg": "OK"}), 200
+    else:
+        return jsonify({"msg": "驗證碼失效"}), 401
 
 
 if __name__ == "__main__":

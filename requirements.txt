@@ -1,2 +1,4 @@
 Flask==0.12
 pycryptodome==3.15.0
+redis-py-cluster
+boto3
