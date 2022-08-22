@@ -49,17 +49,6 @@ class Ses(object):
         # Replace recipient@example.com with a "To" address. If your account
         # is still in the sandbox, this address must be verified.
         self.RECIPIENT = recipeint
-        self.BODY_HTML = """<html>
-        <head></head>
-        <body>
-        <h1>Amazon SES Test (SDK for Python)</h1>
-        <p>This email was sent with
-            <a href='https://aws.amazon.com/ses/'>Amazon SES</a> using the
-            <a href='https://aws.amazon.com/sdk-for-python/'>
-            AWS SDK for Python (Boto)</a>.</p>
-        </body>
-        </html>
-                    """
         # The character encoding for the email.
         self.CHARSET = "UTF-8"
         # Create a new SES resource and specify a region.
@@ -86,10 +75,6 @@ class Ses(object):
                 },
                 Message={
                     "Body": {
-                        "Html": {
-                            "Charset": self.CHARSET,
-                            "Data": self.BODY_HTML,
-                        },
                         "Text": {
                             "Charset": self.CHARSET,
                             "Data": self.BODY_TEXT,
@@ -105,7 +90,7 @@ class Ses(object):
                 # following line
                 # ConfigurationSetName=CONFIGURATION_SET,
             )
-        # Display an error if something goes wrong.
+            # Display an error if something goes wrong.
         except ClientError as e:
             return e.response["Error"]["Message"]
         else:
