@@ -8,21 +8,23 @@ import logging
 
 logging.getLogger().setLevel(logging.INFO)
 
-host = "clustercfg.redis-cluster.nhucv0.memorydb.ap-northeast-1.amazonaws.com"
-port = "6379"
-redis = RedisCluster(
-    startup_nodes=[{"host": host, "port": port}],
-    decode_responses=True,
-    skip_full_coverage_check=True,
-    ssl=True,
-)
+# host = "clustercfg.redis-cluster.nhucv0.memorydb.ap-northeast-1.amazonaws.com"
+# port = "6379"
+# redis = RedisCluster(
+#     startup_nodes=[{"host": host, "port": port}],
+#     decode_responses=True,
+#     skip_full_coverage_check=True,
+#     ssl=True,
+# )
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
 
-@app.route("/<string:_input>")
-def hello_world(_input):
+@app.route("/aes", methods=["POST"])
+def hello_world():
+    data = request.get_json()
+    _input = data["input"]
     key = os.environ.get("AES_KEY")
     aes = Aes_ECB(key)
     test_encrypt = aes.AES_encrypt(_input)
