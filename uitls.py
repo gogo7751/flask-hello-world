@@ -38,7 +38,9 @@ from botocore.exceptions import ClientError
 
 
 class Ses(object):
-    def __init__(self, recipeint, body_text):
+    def __init__(
+        self, recipeint, body_text, _aws_access_key_id, _aws_secret_access_key
+    ):
         # The subject line for the email.
         self.SUBJECT = "驗證碼"
         # The email body for recipients with non-HTML email clients.
@@ -54,8 +56,8 @@ class Ses(object):
         # Create a new SES resource and specify a region.
         self.CLIENT = boto3.client(
             "ses",
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=_aws_access_key_id,
+            aws_secret_access_key=_aws_secret_access_key,
             region_name="ap-northeast-1",
         )
 

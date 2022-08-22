@@ -4,7 +4,7 @@ import os
 from rediscluster import RedisCluster
 from uitls import Aes_ECB, Ses
 import logging
-
+import json
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -48,10 +48,13 @@ def otp():
     data = request.get_json(force=True, silent=True, cache=False)
     email = data["email"]
     body_text = f"登入驗證碼：{otp}，驗證碼 5 分鐘內有效。"
-    redis.set(f"otp-{email}", {"email": email, "otp": otp})
-    redis.expire(f"otp-{email}", 5)
-
-    ses = Ses(email, body_text)
+    redis.set(f"otp-{email}", json.dumps({"email": email, "otp": otp}))
+    redis.expire(f"otp-{email}", 180)
+    access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+    secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    print(f"id:{access_key_id}")
+    print(f"key:{secret_access_key}")
+    ses = Ses(email, body_text, access_key_id, secret_access_key)
     res = ses.ses_send_email()
     return jsonify({"msg": res}), 200
 
@@ -61,7 +64,7 @@ def verify():
     data = request.get_json(force=True, silent=True, cache=False)
     otp = data["otp"]
     email = data["email"]
-    otp_exist = redis.get(f"otp-{email}")
+    otp_exist = json.loads(redis.get(f"otp-{email}"))
     if otp_exist:
         if otp_exist["email"] != email or otp_exist["otp"] != otp:
             return jsonify({"msg": "驗證碼錯誤"}), 401
