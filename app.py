@@ -48,8 +48,8 @@ def otp():
     data = request.get_json()
     email = data["email"]
     body_text = f"登入驗證碼：{otp}，驗證碼 5 分鐘內有效。"
-    redis.set(f"otp-{email}", {"email": email, "otp": otp})
-    redis.expire(f"otp-{email}", 5)
+    # redis.set(f"otp-{email}", {"email": email, "otp": otp})
+    # redis.expire(f"otp-{email}", 5)
 
     Ses(email, body_text)
     return jsonify({"msg": "OK"}), 200
@@ -60,13 +60,13 @@ def verify():
     data = request.get_json()
     otp = data["otp"]
     email = data["email"]
-    otp_exist = redis.get(f"otp-{email}")
-    if otp_exist:
-        if otp_exist["email"] != email or otp_exist["otp"] != otp:
-            return jsonify({"msg": "驗證碼錯誤"}), 401
-        return jsonify({"msg": "OK"}), 200
-    else:
-        return jsonify({"msg": "驗證碼失效"}), 401
+    # otp_exist = redis.get(f"otp-{email}")
+    # if otp_exist:
+    #     if otp_exist["email"] != email or otp_exist["otp"] != otp:
+    #         return jsonify({"msg": "驗證碼錯誤"}), 401
+    #     return jsonify({"msg": "OK"}), 200
+    # else:
+    #     return jsonify({"msg": "驗證碼失效"}), 401
 
 
 if __name__ == "__main__":
