@@ -3,8 +3,8 @@ version: 0.2
 env:
   secrets-manager:
     AES_KEY: "cex/secret:aes-key"
-    AWS_ACCESS_KEY_ID: "cex/secret:aws_access_key_id"
-    AWS_SECRET_ACCESS_KEY: "cex/secret:aws_secret_access_key"
+    AWS_ACCESS_KEY_ID: "cex/secret:aws-access-key-id"
+    AWS_SECRET_ACCESS_KEY: "cex/secret:aws-secret-access-key"
 
 phases:
   pre_build:
@@ -15,7 +15,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t testsecret . --build-arg="AES_KEY=$AES_KEY"
+      - docker build -t testsecret . --build-arg="AES_KEY=$AES_KEY" --build-arg="AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" --build-arg="AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
       - docker tag testsecret:latest 006852863024.dkr.ecr.ap-northeast-1.amazonaws.com/testsecret:latest
   post_build:
     commands:
