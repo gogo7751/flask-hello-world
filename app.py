@@ -8,14 +8,14 @@ import logging
 
 logging.getLogger().setLevel(logging.INFO)
 
-host = "clustercfg.redis-cluster.nhucv0.memorydb.ap-northeast-1.amazonaws.com"
-port = "6379"
-redis = RedisCluster(
-    startup_nodes=[{"host": host, "port": port}],
-    decode_responses=True,
-    skip_full_coverage_check=True,
-    ssl=True,
-)
+# host = "clustercfg.redis-cluster.nhucv0.memorydb.ap-northeast-1.amazonaws.com"
+# port = "6379"
+# redis = RedisCluster(
+#     startup_nodes=[{"host": host, "port": port}],
+#     decode_responses=True,
+#     skip_full_coverage_check=True,
+#     ssl=True,
+# )
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
@@ -48,8 +48,8 @@ def otp():
     data = request.get_json(force=True, silent=True, cache=False)
     email = data["email"]
     body_text = f"登入驗證碼：{otp}，驗證碼 5 分鐘內有效。"
-    redis.set(f"otp-{email}", {"email": email, "otp": otp})
-    redis.expire(f"otp-{email}", 5)
+    # redis.set(f"otp-{email}", {"email": email, "otp": otp})
+    # redis.expire(f"otp-{email}", 5)
 
     ses = Ses(email, body_text)
     res = ses.ses_send_email()
